@@ -21,12 +21,13 @@ const initDb = async () => {
         CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
         email VARCHAR(255) UNIQUE NOT NULL,
-        password TEXT NOT NULL,
+        password_hash TEXT NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
     `;
     try {
         await pool.query(queryText);
+        console.log("Database user table initialized.")
     } catch(err) {
         console.error("Error in creating user table", err)
     }
