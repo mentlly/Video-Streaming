@@ -10,3 +10,28 @@ services:
       - /app/node_modules
     #this line for testing
     command: node --watch index.js
+    depends_on:
+      - postgres
+  
+  postgres:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "5432:5432" # Maps port 5432 to your laptop so GUI tools can connect
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # The data persistence anchor
+  
+  go-video-management:
+    build: ./go-video-management
+    env_file:
+      - .env
+    ports:
+      - 8080:8080
+
+
+volumes:
+  postgres_data:
