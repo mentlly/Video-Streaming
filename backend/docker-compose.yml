@@ -1,12 +1,12 @@
 services:
-  node-api:
-    build: ./node-api
+  auth:
+    build: ./auth
     ports:
       - "3000:${NODE_API_PORT}"
     env_file:
       - .env
     volumes:
-      - ./node-api:/app
+      - ./auth:/app
       - /app/node_modules
     #this line for testing
     command: node --watch index.js
