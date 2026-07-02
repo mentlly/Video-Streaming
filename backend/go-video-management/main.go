@@ -1,11 +1,13 @@
 package main
 
 import (
+	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
 	"io"
 	"log"
+	"math/big"
 	"mime/multipart"
 	"net/http"
 	"os"
@@ -60,7 +62,8 @@ func uploadVideoHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("Uploaded File: %s\n", handler.Filename)
 	fmt.Printf("File Size: %d bytes\n", handler.Size)
 
-	dst, err := os.Create(filepath.Join("./uploads", handler.Filename))
+	//Creating filename for uploaded to write in
+	dst, err := os.Create(filepath.Join("./uploads", generateVideoId()))
 	if err != nil {
 		http.Error(w, "Internal server error creating file", http.StatusBadRequest)
 		return
@@ -86,4 +89,22 @@ func videoHasher(file multipart.File) (string, error) {
 
 	hashInBytes := hasher.Sum(nil)
 	return base64.RawURLEncoding.EncodeToString(hashInBytes), nil
+}
+
+// Genrates a random string of length 10 for videoId
+func generateVideoId() string {
+	alphabet := "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+	length := 10
+	max := big.NewInt(62)
+	rstr := ""
+
+	for i := 1; i <= length; i++ {
+		secureNum, err := rand.Int(rand.Reader, max)
+		if err != nil {
+			panic(err)
+		}
+
+		rstr += string(alphabet[int(secureNum.Int64())])
+	}
+	return rstr
 }
