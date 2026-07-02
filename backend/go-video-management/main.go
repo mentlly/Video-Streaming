@@ -1,9 +1,12 @@
 package main
 
 import (
+	"crypto/sha256"
+	"encoding/base64"
 	"fmt"
 	"io"
 	"log"
+	"mime/multipart"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -72,4 +75,15 @@ func uploadVideoHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Video uploaded successfully"))
+}
+
+// currently not used to generate a unique id
+func videoHasher(file multipart.File) (string, error) {
+	hasher := sha256.New()
+	if _, err := io.Copy(hasher, file); err != nil {
+		return "", err
+	}
+
+	hashInBytes := hasher.Sum(nil)
+	return base64.RawURLEncoding.EncodeToString(hashInBytes), nil
 }
