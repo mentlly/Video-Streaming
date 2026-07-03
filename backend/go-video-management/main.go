@@ -130,7 +130,7 @@ func videoProccessor(dir string) {
 	args := []string{
 		"-i", "original.mp4", // Input file
 		"-threads", "0", // Max CPU cores
-		"-preset", "ultrafast",
+		"-preset", "ultrafast", // Max encoding speed
 		"-vcodec", "libx264", // H.264 video codec
 		"-acodec", "copy", // Direct audio copy (no encoding)
 		"-vf", "scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2",
