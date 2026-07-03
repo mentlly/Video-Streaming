@@ -64,8 +64,15 @@ func uploadVideoHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("Uploaded File: %s\n", handler.Filename)
 	fmt.Printf("File Size: %d bytes\n", handler.Size)
 
-	//Creating filename for uploaded video to write in
-	dst, err := os.Create(filepath.Join("./uploads", generateVideoId()))
+	//Creating directory for uploaded video to write in
+	videoId := generateVideoId()
+	dir := "./uploads/" + videoId
+	err = os.MkdirAll(dir, os.ModePerm)
+	if err != nil {
+		log.Fatalf("Failed to create directory: %v", err)
+	}
+
+	dst, err := os.Create(filepath.Join(dir, "original.mp4"))
 	if err != nil {
 		http.Error(w, "Internal server error creating file", http.StatusBadRequest)
 		return
@@ -78,6 +85,8 @@ func uploadVideoHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error saving the file", http.StatusBadRequest)
 		return
 	}
+
+	videoProccessor(dir)
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Video uploaded successfully"))
@@ -112,9 +121,12 @@ func generateVideoId() string {
 	return rstr
 }
 
-func videoProccessor() {
+func videoProccessor(dir string) {
+	//Navigating to folder where video is there
+	fmt.Printf("compressing ...")
+
 	args := []string{
-		"-i", "orginal", // Input file
+		"-i", "original.mp4", // Input file
 		"-vcodec", "libx264", // H.264 video codec
 		"-crf", "28", // Compression Value
 		"-y", // Overwrite automatically
@@ -126,9 +138,10 @@ func videoProccessor() {
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
 
+	cmd.Dir = dir
 	err := cmd.Run()
 
 	if err != nil {
-		log.Fatalf("FFmpeg failed: %v\nLogs: %s\n", err, stderr.String())
+		fmt.Printf("FFmpeg failed: %v\nLogs: %s\n", err, stderr.String())
 	}
 }
