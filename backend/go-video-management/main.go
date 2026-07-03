@@ -125,12 +125,21 @@ func videoProccessor(dir string) {
 	//Navigating to folder where video is there
 	fmt.Printf("compressing ...")
 
+	os.MkdirAll(dir+"/streaming_output", os.ModePerm)
+
 	args := []string{
 		"-i", "original.mp4", // Input file
 		"-vcodec", "libx264", // H.264 video codec
-		"-crf", "28", // Compression Value
-		"-y", // Overwrite automatically
-		"compressed.mp4",
+		"-vf", "scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2",
+		"-crf", "23", // Compression value
+		"-g", "60",
+		"-keyint_min", "60",
+		"-sc_threshold", "0", // Making a key frame every 60 frames
+		"-f", "hls", // For output to be in hls format
+		"-hls_time", "5", // Making 5 seconds segments
+		"-hls_playlist_type", "event",
+		"-hls_segment_filename", "streaming_output/file%03d.ts",
+		"streaming_output/stream.m3u8",
 	}
 
 	cmd := exec.Command("ffmpeg", args...)
