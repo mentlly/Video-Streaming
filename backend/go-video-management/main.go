@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
@@ -11,6 +12,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
 )
 
@@ -62,7 +64,7 @@ func uploadVideoHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("Uploaded File: %s\n", handler.Filename)
 	fmt.Printf("File Size: %d bytes\n", handler.Size)
 
-	//Creating filename for uploaded to write in
+	//Creating filename for uploaded video to write in
 	dst, err := os.Create(filepath.Join("./uploads", generateVideoId()))
 	if err != nil {
 		http.Error(w, "Internal server error creating file", http.StatusBadRequest)
@@ -70,6 +72,7 @@ func uploadVideoHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer dst.Close()
 
+	//Copying the file to the created filename
 	_, err = io.Copy(dst, file)
 	if err != nil {
 		http.Error(w, "Error saving the file", http.StatusBadRequest)
@@ -107,4 +110,25 @@ func generateVideoId() string {
 		rstr += string(alphabet[int(secureNum.Int64())])
 	}
 	return rstr
+}
+
+func videoProccessor() {
+	args := []string{
+		"-i", "orginal", // Input file
+		"-vcodec", "libx264", // H.264 video codec
+		"-crf", "28", // Compression Value
+		"-y", // Overwrite automatically
+		"compressed.mp4",
+	}
+
+	cmd := exec.Command("ffmpeg", args...)
+
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
+
+	err := cmd.Run()
+
+	if err != nil {
+		log.Fatalf("FFmpeg failed: %v\nLogs: %s\n", err, stderr.String())
+	}
 }
