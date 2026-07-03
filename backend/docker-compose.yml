@@ -31,7 +31,9 @@ services:
       - .env
     ports:
       - 8080:8080
-
+    volumes:
+      - go_uploads_data:/app/uploads
 
 volumes:
   postgres_data:
+  go_uploads_data:
