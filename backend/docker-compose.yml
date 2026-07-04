@@ -1,8 +1,8 @@
 services:
   auth:
     build: ./auth
-    ports:
-      - "3000:${NODE_API_PORT}"
+    expose:
+      - "${NODE_API_PORT}"
     env_file:
       - .env
     volumes:
@@ -29,10 +29,22 @@ services:
     build: ./go-video-management
     env_file:
       - .env
-    ports:
-      - 8080:8080
+    expose:
+      - "8080"
     volumes:
       - go_uploads_data:/app/uploads
+  
+  nginx:
+    image: nginx:alpine
+    container_name: nginx_proxy
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - auth
+      - go-video-management
+
 
 volumes:
   postgres_data:
