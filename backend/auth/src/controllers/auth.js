@@ -7,8 +7,18 @@ const JWT_SECRET = process.env.JWT_SECRET
 exports.register = async (req, res) => {
     const { email, password } = req.body;
 
-    if (!email || !password) {
-        return res.status(400).json({ error: 'Email and password are required' });
+    if (!email) {
+        return res.status(400).json({ error: 'Email is required' });
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return res.status(400).json({ error: 'Enter a valid email'})
+    }
+
+    if (!password) {
+        return res.status(400).json({ error: 'Password is required '});
+    } else if (password.length < 8) {
+        return res.status(400).json({ error: 'Password should be greater than or equal to 8 characters'});
+    } else if (password.length > 16) {
+        return res.status(400).json({ error: 'Password should be less than or equal to 16 characters'});
     }
 
     try {
@@ -38,8 +48,18 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
     const { email, password } = req.body;
 
-    if (!email || !password) {
-        return res.status(400).json({ error: 'Email and password are required' });
+    if (!email) {
+        return res.status(400).json({ error: 'Email is required' });
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return res.status(400).json({ error: 'Enter a valid email'})
+    }
+
+    if (!password) {
+        return res.status(400).json({ error: 'Password is required '});
+    } else if (password.length < 8) {
+        return res.status(400).json({ error: 'Password should be greater than or equal to 8 characters'});
+    } else if (password.length > 16) {
+        return res.status(400).json({ error: 'Password should be less than or equal to 16 characters'});
     }
 
     try {
