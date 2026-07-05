@@ -22,15 +22,10 @@ func main() {
 		port = "8080"
 	}
 
-	http.HandleFunc("/api/stream", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprintf(w, `{"status": "Ok"}`)
-	})
-
 	//Creating upload folder to store uploaded videos
 	os.MkdirAll("./uploads", os.ModePerm)
 
-	http.HandleFunc("/api/upload", uploadVideoHandler)
+	http.HandleFunc("/api/video/upload", uploadVideoHandler)
 
 	log.Printf("Go Video Management Server booting up internally on port %s", port)
 	err := http.ListenAndServe(":"+port, nil)
@@ -132,7 +127,6 @@ func videoProccessor(dir string) {
 		"-threads", "0", // Max CPU cores
 		"-preset", "ultrafast", // Max encoding speed
 		"-vcodec", "libx264", // H.264 video codec
-		"-acodec", "copy", // Direct audio copy (no encoding)
 		"-vf", "scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2",
 		"-crf", "23", // Compression value
 		"-g", "60",
