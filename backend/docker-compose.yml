@@ -25,8 +25,8 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data # The data persistence anchor
   
-  go-video-management:
-    build: ./go-video-management
+  video-manager:
+    build: ./video-manager
     env_file:
       - .env
     expose:
@@ -43,7 +43,7 @@ services:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
       - auth
-      - go-video-management
+      - video-manager
 
 
 volumes:

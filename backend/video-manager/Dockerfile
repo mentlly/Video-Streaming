@@ -1,7 +1,11 @@
 # --- STAGE 1: Build the Go Binary ---
-FROM golang:1.21-alpine AS builder
+FROM golang:1.26-alpine AS builder
 
 WORKDIR /app
+
+COPY go.mod ./
+
+RUN go mod download
 
 # Copy the source code
 COPY . .
