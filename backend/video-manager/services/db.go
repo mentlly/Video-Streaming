@@ -47,6 +47,7 @@ func InitDb() {
 		title varchar(100) NOT NULL, 
 		description varchar(5000),
 		duration INT(4) NOT NULL, 
+		created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
 		channel_id varchar(10) NOT NULL,
 		FOREIGN KEY (channel_id) REFERENCES channel(channel_id));`,
 	)
