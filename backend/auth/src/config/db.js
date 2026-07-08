@@ -18,7 +18,7 @@ pool.query('SELECT NOW()', (err, res) => {
 
 const initDb = async () => {
     const queryText = `
-        CREATE TABLE IF NOT EXISTS user (
+        CREATE TABLE IF NOT EXISTS users (
         account_id SERIAL PRIMARY KEY,
         email VARCHAR(255) UNIQUE NOT NULL,
         password_hash TEXT NOT NULL,
