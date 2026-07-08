@@ -29,7 +29,7 @@ func InitDb() {
 	commandTag, err := dbpool.Exec(
 		ctx,
 		`CREATE TABLE IF NOT EXISTS channel 
-		(channel_id varchar(10) PRIMARY KEY NOT NULL, 
+		(channel_id varchar(10) PRIMARY KEY, 
 		name varchar(25) NOT NULL, 
 		Bio varchar(500),
 		created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP);`,
@@ -43,10 +43,10 @@ func InitDb() {
 	commandTag, err = dbpool.Exec(
 		ctx,
 		`CREATE TABLE IF NOT EXISTS video 
-		(video_id varchar(10) PRIMARY KEY NOT NULL, 
+		(video_id varchar(10) PRIMARY KEY, 
 		title varchar(100) NOT NULL, 
 		description varchar(5000),
-		duration INT(4) NOT NULL, 
+		duration INT NOT NULL, 
 		created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
 		channel_id varchar(10) NOT NULL,
 		FOREIGN KEY (channel_id) REFERENCES channel(channel_id));`,
