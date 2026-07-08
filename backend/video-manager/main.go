@@ -15,7 +15,7 @@ func main() {
 		port = "8080"
 	}
 
-	services.ConnDb()
+	services.InitDb()
 
 	//Creating upload folder to store uploaded videos
 	if err := os.MkdirAll("./uploads", os.ModePerm); err != nil {
