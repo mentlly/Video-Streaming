@@ -28,11 +28,13 @@ func InitDb() {
 	//Creation of channel table
 	commandTag, err := dbpool.Exec(
 		ctx,
-		`CREATE TABLE IF NOT EXISTS channel 
-		(channel_id varchar(10) PRIMARY KEY, 
+		`CREATE TABLE IF NOT EXISTS channel (
+		account_id varchar(10) NOT NULL,
+		channel_id varchar(10) PRIMARY KEY, 
 		name varchar(25) NOT NULL, 
 		Bio varchar(500),
-		created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP);`,
+		created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+		FOREIGN KEY (account_id) REFERENCES user(account_id));`,
 	)
 	if err != nil {
 		log.Printf("Failed to create table: %v\n", err)
