@@ -28,13 +28,13 @@ func InitDb() {
 	//Creation of channel table
 	commandTag, err := dbpool.Exec(
 		ctx,
-		`CREATE TABLE IF NOT EXISTS channel (
-		account_id varchar(10) NOT NULL,
+		`CREATE TABLE IF NOT EXISTS channels (
+		account_id serial NOT NULL,
 		channel_id varchar(10) PRIMARY KEY, 
 		name varchar(25) NOT NULL, 
 		Bio varchar(500),
-		created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
-		FOREIGN KEY (account_id) REFERENCES user(account_id));`,
+		created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+		FOREIGN KEY (account_id) REFERENCES users(account_id));`,
 	)
 	if err != nil {
 		log.Printf("Failed to create table: %v\n", err)
@@ -44,14 +44,14 @@ func InitDb() {
 
 	commandTag, err = dbpool.Exec(
 		ctx,
-		`CREATE TABLE IF NOT EXISTS video 
+		`CREATE TABLE IF NOT EXISTS videos 
 		(video_id varchar(10) PRIMARY KEY, 
 		title varchar(100) NOT NULL, 
 		description varchar(5000),
 		duration INT NOT NULL, 
 		created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
 		channel_id varchar(10) NOT NULL,
-		FOREIGN KEY (channel_id) REFERENCES channel(channel_id));`,
+		FOREIGN KEY (channel_id) REFERENCES channels(channel_id));`,
 	)
 	if err != nil {
 		log.Printf("Failed to create table: %v\n", err)
