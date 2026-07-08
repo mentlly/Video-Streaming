@@ -11,7 +11,7 @@ import (
 
 var dbpool *pgxpool.Pool
 
-func ConnDb() {
+func InitDb() {
 	//Creating a connection with database
 	connStr := os.Getenv("DB_URL")
 
@@ -25,7 +25,22 @@ func ConnDb() {
 
 	log.Println("Database connected ....")
 
+	//Creation of channel table
 	commandTag, err := dbpool.Exec(
+		ctx,
+		`CREATE TABLE IF NOT EXISTS channel 
+		(channel_id varchar(10) PRIMARY KEY NOT NULL, 
+		name varchar(25) NOT NULL, 
+		Bio varchar(500),
+		created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP);`,
+	)
+	if err != nil {
+		log.Printf("Failed to create table: %v\n", err)
+		return
+	}
+	fmt.Printf("Table status: %s\n", commandTag.String())
+
+	commandTag, err = dbpool.Exec(
 		ctx,
 		`CREATE TABLE IF NOT EXISTS video 
 		(video_id varchar(10) PRIMARY KEY NOT NULL, 
@@ -36,7 +51,7 @@ func ConnDb() {
 		FOREIGN KEY (channel_id) REFERENCES channel(channel_id));`,
 	)
 	if err != nil {
-		log.Printf("Failed to create table: %w\n", err)
+		log.Printf("Failed to create table: %v\n", err)
 		return
 	}
 	fmt.Printf("Table status: %s\n", commandTag.String())
