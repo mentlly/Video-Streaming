@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"video-manager/handlers"
+	"video-manager/services"
 )
 
 func main() {
@@ -13,6 +14,8 @@ func main() {
 	if port == "" {
 		port = "8080"
 	}
+
+	services.ConnDb()
 
 	//Creating upload folder to store uploaded videos
 	if err := os.MkdirAll("./uploads", os.ModePerm); err != nil {
