@@ -59,3 +59,36 @@ func InitDb() {
 	}
 	fmt.Printf("Table status: %s\n", commandTag.String())
 }
+
+func UploadVideo(account_id int, channel_id string, video_id string, title string, description string, duration int) {
+	ctx := context.Background()
+
+	//Checking if that channel and account exists
+	var exists bool
+	err := dbpool.QueryRow(
+		ctx,
+		`SELECT * FROM channel
+		WHERE channel_id = ${1}
+		AND account_id = ${2}`,
+		channel_id,
+		account_id,
+	).Scan(&exists)
+	if err != nil && !exists {
+		log.Printf("%v\n", err)
+		return
+	}
+
+	_, err = dbpool.Exec(
+		ctx,
+		`INSERT INTO VIDEOS 
+		(video_id, title, description, duration, channel_id)
+		VALUES
+		(${1},${2},${3},${4},${5})`,
+		video_id, title, description,
+		duration, channel_id,
+	)
+	if err != nil {
+		log.Printf("%v\n", err)
+		return
+	}
+}
