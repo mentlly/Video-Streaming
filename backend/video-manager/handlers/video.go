@@ -1,11 +1,11 @@
 package handlers
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"video-manager/services"
 	"video-manager/utils"
@@ -16,6 +16,12 @@ const MAX_UPLOAD_SIZE = 2 * 1024 * 1024 * 1024
 func UploadVideoHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	authHeader := r.Header.Get("Authorization")
+	if authHeader == "" {
+		http.Error(w, "Authorization header is missing", http.StatusUnauthorized)
 		return
 	}
 
@@ -33,8 +39,12 @@ func UploadVideoHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Printf("Uploaded File: %s\n", handler.Filename)
-	fmt.Printf("File Size: %d bytes\n", handler.Size)
+	title := r.FormValue("title")
+	if strings.TrimSpace(title) != "" {
+		title = handler.Filename
+	}
+	description := r.FormValue("description")
+	channel_id := r.FormValue("channel_id")
 
 	//Creating directory for uploaded video to write in
 	videoId := utils.GenerateVideoId()
@@ -55,10 +65,10 @@ func UploadVideoHandler(w http.ResponseWriter, r *http.Request) {
 	_, err = io.Copy(dst, file)
 	if err != nil {
 		http.Error(w, "Error saving the file", http.StatusBadRequest)
-		return
 	}
 
-	services.VideoProccessor(dir)
+	duration := services.VideoProccessor(dir)
+	services.UploadVideoDb(account_id, channel_id, videoId, title, description, duration)
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Video uploaded successfully"))
