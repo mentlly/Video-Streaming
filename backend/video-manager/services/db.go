@@ -60,7 +60,7 @@ func InitDb() {
 	fmt.Printf("Table status: %s\n", commandTag.String())
 }
 
-func UploadVideo(account_id int, channel_id string, video_id string, title string, description string, duration int) {
+func UploadVideoDb(account_id int, channel_id string, video_id string, title string, description string, duration int) {
 	ctx := context.Background()
 
 	//Checking if that channel and account exists
