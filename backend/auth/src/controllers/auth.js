@@ -79,15 +79,23 @@ exports.login = async (req, res) => {
 
         // Generate JWT token (expires in 1 hours)
         const token = jwt.sign(
-            { userId: user.id, email: user.email },
+            { userId: user.account_id },
             JWT_SECRET,
             { expiresIn: '1h' }
         );
 
+        res.cookie('jwt_token', token, 
+            { 
+                httpOnly: true,
+                secure: false,
+                sameSite: 'lax', 
+                maxAge: 24 * 60 * 60 * 1000
+            }
+        )
+
         // Return token to client
         return res.status(200).json({
             message: 'Login successful',
-            token: token
         });
     } catch (error) {
         console.error('Login Error:', error);
