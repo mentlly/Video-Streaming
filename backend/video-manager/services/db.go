@@ -17,32 +17,32 @@ func InitDb() {
 
 	ctx := context.Background()
 
-	dbpool, err := pgxpool.New(ctx, connStr)
+	var err error
+	dbpool, err = pgxpool.New(ctx, connStr)
 	if err != nil {
 		log.Fatalf("Unable to connect to database: %v\n", err)
 	}
-	defer dbpool.Close()
 
 	log.Println("Database connected ....")
 
-	//Creation of channel table
-	commandTag, err := dbpool.Exec(
-		ctx,
-		`CREATE TABLE IF NOT EXISTS channels (
-		account_id serial NOT NULL,
-		channel_id varchar(10) PRIMARY KEY, 
-		name varchar(25) NOT NULL, 
-		Bio varchar(500),
-		created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-		FOREIGN KEY (account_id) REFERENCES users(account_id));`,
-	)
-	if err != nil {
-		log.Printf("Failed to create table: %v\n", err)
-		return
-	}
-	fmt.Printf("Table status: %s\n", commandTag.String())
+	// //Creation of channel table
+	// commandTag, err := dbpool.Exec(
+	// 	ctx,
+	// 	`CREATE TABLE IF NOT EXISTS channels (
+	// 	account_id serial NOT NULL,
+	// 	channel_id varchar(10) PRIMARY KEY,
+	// 	name varchar(25) NOT NULL,
+	// 	Bio varchar(500),
+	// 	created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+	// 	FOREIGN KEY (account_id) REFERENCES users(account_id));`,
+	// )
+	// if err != nil {
+	// 	log.Printf("Failed to create table: %v\n", err)
+	// 	return
+	// }
+	// fmt.Printf("Table status: %s\n", commandTag.String())
 
-	commandTag, err = dbpool.Exec(
+	commandTag, err := dbpool.Exec(
 		ctx,
 		`CREATE TABLE IF NOT EXISTS videos 
 		(video_id varchar(10) PRIMARY KEY, 
@@ -50,8 +50,8 @@ func InitDb() {
 		description varchar(5000),
 		duration INT NOT NULL, 
 		created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-		channel_id varchar(10) NOT NULL,
-		FOREIGN KEY (channel_id) REFERENCES channels(channel_id));`,
+		account_id SERIAL NOT NULL,
+		FOREIGN KEY (account_id) REFERENCES users(account_id));`,
 	)
 	if err != nil {
 		log.Printf("Failed to create table: %v\n", err)
@@ -60,32 +60,35 @@ func InitDb() {
 	fmt.Printf("Table status: %s\n", commandTag.String())
 }
 
-func UploadVideoDb(account_id int, channel_id string, video_id string, title string, description string, duration int) {
+func UploadVideoDb(account_id int, video_id string, title string, description string, duration int) {
 	ctx := context.Background()
 
-	//Checking if that channel and account exists
-	var exists bool
-	err := dbpool.QueryRow(
-		ctx,
-		`SELECT * FROM channel
-		WHERE channel_id = ${1}
-		AND account_id = ${2}`,
-		channel_id,
-		account_id,
-	).Scan(&exists)
-	if err != nil && !exists {
-		log.Printf("%v\n", err)
-		return
-	}
+	// //Checking if that channel and account exists
+	// var exists bool
+	// err := dbpool.QueryRow(
+	// 	ctx,
+	// 	`SELECT * FROM channel
+	// 	WHERE channel_id = ${1}
+	// 	AND account_id = ${2}`,
+	// 	channel_id,
+	// 	account_id,
+	// ).Scan(&exists)
+	// if err != nil && !exists {
+	// 	log.Printf("%v\n", err)
+	// 	return
+	// }
 
-	_, err = dbpool.Exec(
+	_, err := dbpool.Exec(
 		ctx,
 		`INSERT INTO VIDEOS 
-		(video_id, title, description, duration, channel_id)
+		(video_id, title, description, duration, account_id)
 		VALUES
-		(${1},${2},${3},${4},${5})`,
-		video_id, title, description,
-		duration, channel_id,
+		($1, $2, $3, $4, $5)`,
+		video_id,
+		title,
+		description,
+		duration,
+		account_id,
 	)
 	if err != nil {
 		log.Printf("%v\n", err)
