@@ -23,7 +23,9 @@ func main() {
 	}
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("POST /api/video/upload", handlers.UploadVideoHandler)
+
+	protectedRoute := services.AuthMiddleware(http.HandlerFunc(handlers.UploadVideoHandler))
+	mux.Handle("POST /api/video/upload", protectedRoute)
 
 	log.Printf("Go Video Management Server booting up internally on port %s", port)
 	err := http.ListenAndServe(":"+port, mux)
