@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -19,9 +20,12 @@ func UploadVideoHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	authHeader := r.Header.Get("Authorization")
-	if authHeader == "" {
-		http.Error(w, "Authorization header is missing", http.StatusUnauthorized)
+	fmt.Printf("context: %v\n", r.Context().Value("userId"))
+
+	account_id, ok := r.Context().Value("userId").(int)
+	if !ok || account_id <= 0 {
+		// If the cast fails or it's empty, the middleware didn't set it properly
+		http.Error(w, "Unauthorized: Missing identity profile", http.StatusUnauthorized)
 		return
 	}
 
@@ -40,11 +44,10 @@ func UploadVideoHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	title := r.FormValue("title")
-	if strings.TrimSpace(title) != "" {
+	if strings.TrimSpace(title) == "" {
 		title = handler.Filename
 	}
 	description := r.FormValue("description")
-	channel_id := r.FormValue("channel_id")
 
 	//Creating directory for uploaded video to write in
 	videoId := utils.GenerateVideoId()
@@ -68,7 +71,8 @@ func UploadVideoHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	duration := services.VideoProccessor(dir)
-	services.UploadVideoDb(account_id, channel_id, videoId, title, description, duration)
+
+	services.UploadVideoDb(account_id, videoId, title, description, duration)
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Video uploaded successfully"))
