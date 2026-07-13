@@ -34,6 +34,8 @@ func main() {
 	fileServer := http.FileServer(hlsDir)
 	mux.Handle("GET /api/video/", http.StripPrefix("/api/video/", fileServer))
 
+	mux.HandleFunc("GET /api/video/get", handlers.GetVideoHandler)
+
 	log.Printf("Go Video Management Server booting up internally on port %s", port)
 	err := http.ListenAndServe(":"+port, mux)
 	if err != nil {
