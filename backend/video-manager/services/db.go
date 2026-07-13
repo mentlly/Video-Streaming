@@ -11,6 +11,14 @@ import (
 
 var dbpool *pgxpool.Pool
 
+type VideoRecord struct {
+	ThumbnailUrl string
+	VideoId      string
+	Title        string
+	Description  string
+	Duration     int
+}
+
 func InitDb() {
 	//Creating a connection with database
 	connStr := os.Getenv("DB_URL")
@@ -94,4 +102,41 @@ func UploadVideoDb(account_id int, video_id string, title string, description st
 		log.Printf("%v\n", err)
 		return
 	}
+}
+
+func GetLatestVideos(page int) ([]VideoRecord, error) {
+	ctx := context.Background()
+
+	page = (page - 1) * 10
+
+	rows, err := dbpool.Query(
+		ctx,
+		`SELECT video_id, title, description, duration FROM videos
+		ORDER BY created_at DESC
+		LIMIT $1 OFFSET $2;`,
+		10,
+		page,
+	)
+	if err != nil {
+		log.Printf("Failed to fetch: %v\n", err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	var latestVideos []VideoRecord
+
+	for rows.Next() {
+		var v VideoRecord
+		err := rows.Scan(&v.VideoId, &v.Title, &v.Description, &v.Duration)
+		if err != nil {
+			log.Printf("Failed to scan rows: %v\n", err)
+			return nil, err
+		}
+		latestVideos = append(latestVideos, v)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+	return latestVideos, nil
 }
