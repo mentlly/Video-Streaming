@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"mime"
 	"net/http"
 	"os"
 
@@ -28,13 +27,8 @@ func main() {
 	protectedRoute := services.AuthMiddleware(http.HandlerFunc(handlers.UploadVideoHandler))
 	mux.Handle("POST /api/video/upload", protectedRoute)
 
-	mime.AddExtensionType(".m3u8", "application/x-mpegURL")
-	mime.AddExtensionType(".ts", "video/MP2T")
-	hlsDir := http.Dir("./uploads")
-	fileServer := http.FileServer(hlsDir)
-	mux.Handle("GET /api/video/", http.StripPrefix("/api/video/", fileServer))
-
-	mux.HandleFunc("GET /api/video/get", handlers.GetVideoHandler)
+	mux.HandleFunc("GET /api/video/get/latest", handlers.GetLatestVideoHandler)
+	mux.HandleFunc("GET /api/video/get/{VideoId}/{filename...}", handlers.GetIdVideoHandler)
 
 	log.Printf("Go Video Management Server booting up internally on port %s", port)
 	err := http.ListenAndServe(":"+port, mux)
