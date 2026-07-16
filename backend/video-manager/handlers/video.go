@@ -79,7 +79,7 @@ func UploadVideoHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Video uploaded successfully"))
 }
 
-func GetVideoHandler(w http.ResponseWriter, r *http.Request) {
+func GetLatestVideoHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		return
@@ -93,4 +93,50 @@ func GetVideoHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(videos)
+}
+
+func GetIdVideoHandler(w http.ResponseWriter, r *http.Request) {
+	videoId := r.PathValue("VideoId")
+
+	// 1. Target the exact folder where this specific video's chunks live
+	dirPath := fmt.Sprintf("./uploads/%s/streaming_output", videoId)
+
+	// 2. Double-check if the folder actually exists to avoid confusing errors
+	if _, err := os.Stat(dirPath); os.IsNotExist(err) {
+		http.NotFound(w, r)
+		return
+	}
+
+	// 3. Apply necessary streaming headers before handing off to Go's core file engine
+	filename := r.PathValue("filename")
+
+	// 💡 FIX 1: Prevent Directory Traversal & Folder Browsing
+	// If 'filename' is empty, or if it points to a directory path instead of a file, block it!
+	cleanedFile := filepath.Clean(filename)
+	if filename == "" || strings.HasSuffix(r.URL.Path, "/") || cleanedFile == "." || cleanedFile == ".." {
+		http.Error(w, "Access Forbidden", http.StatusForbidden)
+		return
+	}
+
+	fullDiskPath := filepath.Join(dirPath, cleanedFile)
+
+	// 💡 FIX 2: Explicitly check that the requested item is a FILE, not a folder on disk
+	fileInfo, err := os.Stat(fullDiskPath)
+	if os.IsNotExist(err) || fileInfo.IsDir() {
+		http.NotFound(w, r)
+		return
+	}
+
+	if strings.HasSuffix(filename, ".m3u8") {
+		w.Header().Set("Content-Type", "application/x-mpegURL")
+		w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+	} else if strings.HasSuffix(filename, ".ts") {
+		w.Header().Set("Content-Type", "video/MP2T")
+	}
+
+	// 4. Strip the URL structure up to this folder context and serve
+	prefix := fmt.Sprintf("/api/video/get/%s", videoId)
+	handler := http.StripPrefix(prefix, http.FileServer(http.Dir(dirPath)))
+
+	handler.ServeHTTP(w, r)
 }
