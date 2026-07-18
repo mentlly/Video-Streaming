@@ -9,6 +9,15 @@ const nextConfig: NextConfig = {
     },
   },
   allowedDevOrigins: ['192.168.1.*'],
+
+  async rewrites() {
+    return [
+      {
+        source: '/api/external/:path*',
+        destination: `${process.env.BACKEND_URL}/api/:path*`,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
