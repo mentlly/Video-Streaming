@@ -43,9 +43,15 @@ export default function LoginPage() {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
-    const response = await validateForm(formData, errors);
+    // const response = await validateForm(formData, errors);
+    const response = await fetch('/api/external/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+    });
+    const data = await response.json();
     if (response.status != 200) {
-        setErrors(response.error);
+        setErrors(data.error);
         setIsLoading(false);
         return;
     } else {
