@@ -12,11 +12,11 @@ import (
 var dbpool *pgxpool.Pool
 
 type VideoRecord struct {
-	ThumbnailUrl string
-	VideoId      string
-	Title        string
-	Description  string
-	Duration     int
+	ThumbnailUrl string `json:"thumbnailUrl"`
+	VideoId      string `json:"videoId"`
+	Title        string `json:"title"`
+	Description  string `json:"description"`
+	Duration     int    `json:"duration"`
 }
 
 func InitDb() {
