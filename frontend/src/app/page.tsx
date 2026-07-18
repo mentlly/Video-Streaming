@@ -1,39 +1,65 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { getLatestVideos, videoDetails } from './actions';
 
 // Mock data to simulate videos coming from your database/API
-const MOCK_VIDEOS = [
-  {
-    id: '1',
-    title: 'Building a Next.js App in 2026: The Ultimate Guide',
-    channelName: 'CodeCraft',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1618401471353-b98afee0b2eb?w=500&auto=format&fit=crop&q=60',
-    duration: '14:22',
-  },
-  {
-    id: '2',
-    title: 'Learn Tailwind CSS in 10 Minutes flat',
-    channelName: 'DesignBytes',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=500&auto=format&fit=crop&q=60',
-    duration: '10:00',
-  },
-  {
-    id: '3',
-    title: 'Why Everyone is Switching to Full-Stack Development',
-    channelName: 'TechPulse',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=500&auto=format&fit=crop&q=60',
-    duration: '22:15',
-  },
-];
+// const MOCK_VIDEOS = [
+//   {
+//     id: '1',
+//     title: 'Building a Next.js App in 2026: The Ultimate Guide',
+//     channelName: 'CodeCraft',
+//     thumbnailUrl: 'https://images.unsplash.com/photo-1618401471353-b98afee0b2eb?w=500&auto=format&fit=crop&q=60',
+//     duration: '14:22',
+//   },
+//   {
+//     id: '2',
+//     title: 'Learn Tailwind CSS in 10 Minutes flat',
+//     channelName: 'DesignBytes',
+//     thumbnailUrl: 'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=500&auto=format&fit=crop&q=60',
+//     duration: '10:00',
+//   },
+//   {
+//     id: '3',
+//     title: 'Why Everyone is Switching to Full-Stack Development',
+//     channelName: 'TechPulse',
+//     thumbnailUrl: 'https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=500&auto=format&fit=crop&q=60',
+//     duration: '22:15',
+//   },
+// ];
+
 
 export default function VideoFeed() {
-  const [videos] = useState(MOCK_VIDEOS);
+  const [videos, setVideos] = useState<videoDetails[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  // 2. Fetch the data safely inside useEffect after mounting
+  useEffect(() => {
+    async function loadVideos() {
+      try {
+        const data = await getLatestVideos();
+        setVideos(data);
+      } catch (error) {
+        console.error("Failed to fetch videos:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadVideos();
+  }, []);
 
   const handleVideoClick = (videoId: string) => {
     console.log(`Navigating to video / watch page for ID: ${videoId}`);
     // If using Next.js router: router.push(`/watch/${videoId}`)
   };
+
+  if (loading) { 
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900 dark:text-white">
+        Loading videos...
+      </div>
+    ); 
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-8 dark:bg-gray-900 sm:px-6 lg:px-8">
@@ -46,8 +72,8 @@ export default function VideoFeed() {
         <div className="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {videos.map((video) => (
             <div
-              key={video.id}
-              onClick={() => handleVideoClick(video.id)}
+              key={video.videoId}
+              onClick={() => handleVideoClick(video.videoId)}
               className="group cursor-pointer overflow-hidden rounded-xl bg-white transition-all duration-200 hover:shadow-md dark:bg-gray-800"
             >
               {/* Thumbnail Container */}
