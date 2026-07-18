@@ -26,6 +26,7 @@ export default function VideoUpload() {
       const response = await fetch('/api/video/upload', {
         method: 'POST',
         body: formData,
+        credentials: 'include',
       });
 
       if (response.status === 200) {
